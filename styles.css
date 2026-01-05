@@ -1,8 +1,243 @@
-/*
+/* Family Tree Container */
+.family-tree-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Toolbar */
+.family-tree-toolbar {
+	display: flex;
+	gap: 8px;
+	padding: 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	flex-wrap: wrap;
+}
 
-If your plugin does not need CSS, delete this file.
+.family-tree-toolbar-btn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border-radius: 4px;
+	background: var(--interactive-normal);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--text-normal);
+	transition: background 0.15s ease;
+}
 
-*/
+.family-tree-toolbar-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.family-tree-toolbar-btn:active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+/* Graph Container */
+.family-tree-graph {
+	flex: 1;
+	min-height: 0;
+	background: var(--background-primary);
+	position: relative;
+	overflow: hidden;
+}
+
+/* Context Menu */
+.family-tree-context-menu {
+	position: fixed;
+	z-index: 1000;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 150px;
+	padding: 4px 0;
+}
+
+.family-tree-context-item {
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--text-normal);
+}
+
+.family-tree-context-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.family-tree-context-item.danger {
+	color: var(--text-error);
+}
+
+.family-tree-context-item.danger:hover {
+	background: rgba(var(--color-red-rgb), 0.1);
+}
+
+/* Code Block Preview */
+.family-tree-preview {
+	padding: 16px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.family-tree-preview-info {
+	margin-bottom: 12px;
+	font-size: 14px;
+	color: var(--text-muted);
+}
+
+.family-tree-preview-btn {
+	padding: 8px 16px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.family-tree-preview-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+/* Modal Styles */
+.modal-button-container {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 20px;
+	padding-top: 16px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.family-tree-warning {
+	color: var(--text-error);
+	padding: 12px;
+	background: rgba(var(--color-red-rgb), 0.1);
+	border-radius: 4px;
+}
+
+/* Settings Syntax Reference */
+.family-tree-syntax-reference {
+	margin-top: 12px;
+	padding: 16px;
+	background: var(--background-secondary);
+	border-radius: 8px;
+}
+
+.family-tree-syntax-reference pre {
+	background: var(--background-primary);
+	padding: 12px;
+	border-radius: 4px;
+	overflow-x: auto;
+	font-size: 12px;
+}
+
+.family-tree-syntax-reference code {
+	font-family: var(--font-monospace);
+}
+
+/* Cytoscape Canvas Styling */
+.family-tree-graph canvas {
+	outline: none;
+}
+
+/* Action Buttons Container - extends beyond node for button placement */
+.family-tree-action-buttons {
+	position: fixed;
+	pointer-events: none;
+	transform: translate(-50%, -50%);
+	width: 180px;
+	height: 140px;
+	z-index: 10000;
+}
+
+/* Action Button Base Style */
+.family-tree-action-btn {
+	position: absolute;
+	pointer-events: auto !important;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: 2px solid var(--background-primary);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	transition: transform 0.15s ease, background 0.15s ease;
+	z-index: 10001;
+}
+
+.family-tree-action-btn:hover {
+	background: var(--interactive-accent-hover);
+	transform: scale(1.15);
+}
+
+.family-tree-action-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Position: Top (Add Parent) - above the node */
+.family-tree-action-btn-top {
+	left: 50%;
+	top: 0;
+	transform: translateX(-50%);
+	background: #10b981;
+}
+
+.family-tree-action-btn-top:hover {
+	background: #059669;
+	transform: translateX(-50%) scale(1.15);
+}
+
+/* Position: Bottom (Add Child) - below the node */
+.family-tree-action-btn-bottom {
+	left: 50%;
+	bottom: 0;
+	transform: translateX(-50%);
+	background: #10b981;
+}
+
+.family-tree-action-btn-bottom:hover {
+	background: #059669;
+	transform: translateX(-50%) scale(1.15);
+}
+
+/* Position: Left (Add Sibling) - left of the node */
+.family-tree-action-btn-left {
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	background: #8b5cf6;
+}
+
+.family-tree-action-btn-left:hover {
+	background: #7c3aed;
+	transform: translateY(-50%) scale(1.15);
+}
+
+/* Position: Right (Add Spouse) - right of the node */
+.family-tree-action-btn-right {
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	background: #f59e0b;
+}
+
+.family-tree-action-btn-right:hover {
+	background: #d97706;
+	transform: translateY(-50%) scale(1.15);
+}

@@ -1,99 +1,114 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { Plugin } from 'obsidian';
+import { FamilyTreeView, VIEW_TYPE_FAMILY_TREE } from './views/FamilyTreeView';
+import { FamilyTreeStore } from './models/FamilyTreeStore';
+import { VaultScanner } from './sync/VaultScanner';
+import { FamilyTreeSettings, DEFAULT_SETTINGS, FamilyTreeSettingTab } from './settings';
 
-// Remember to rename these classes and interfaces!
-
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class FamilyTreePlugin extends Plugin {
+	settings: FamilyTreeSettings;
+	store: FamilyTreeStore;
+	scanner: VaultScanner;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		// Initialize store
+		this.store = new FamilyTreeStore();
+
+		// Initialize scanner with settings
+		this.scanner = new VaultScanner(
+			this.app,
+			this.store,
+			this.settings.peopleFolder
+		);
+
+		// Register the view
+		this.registerView(
+			VIEW_TYPE_FAMILY_TREE,
+			(leaf) => new FamilyTreeView(leaf, this.store, this.scanner.getNoteManager())
+		);
+
+		// Register code block processor for preview
+		this.registerMarkdownCodeBlockProcessor('family-tree', (source, el, ctx) => {
+			const container = el.createDiv('family-tree-preview');
+
+			// Count persons and relationships in this block
+			const personMatches = source.match(/^person\s+\w+:/gm) || [];
+			const relMatches = source.match(/^(spouse|parent|sibling):/gm) || [];
+
+			container.createDiv('family-tree-preview-info').innerHTML =
+				`<strong>Family Tree Block</strong><br>` +
+				`${personMatches.length} person(s), ${relMatches.length} relationship(s)`;
+
+			const openBtn = container.createEl('button', {
+				text: 'Open Family Tree View',
+				cls: 'family-tree-preview-btn'
+			});
+			openBtn.addEventListener('click', () => this.activateView());
 		});
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
+		// Add ribbon icon
+		this.addRibbonIcon('git-fork', 'Open Family Tree', () => {
+			this.activateView();
+		});
 
-		// This adds a simple command that can be triggered anywhere
+		// Add command to open view
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
+			id: 'open-family-tree',
+			name: 'Open Family Tree View',
+			callback: () => this.activateView()
+		});
+
+		// Add command to refresh data
+		this.addCommand({
+			id: 'refresh-family-tree',
+			name: 'Refresh Family Tree Data',
+			callback: async () => {
+				await this.scanner.initialScan();
 			}
 		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
+
+		// Add settings tab
+		this.addSettingTab(new FamilyTreeSettingTab(this.app, this));
+
+		// Perform initial vault scan after layout is ready
+		this.app.workspace.onLayoutReady(async () => {
+			await this.scanner.initialScan();
+			this.scanner.registerWatchers();
 		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-				return false;
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
 	}
 
 	onunload() {
+		this.scanner?.unregisterWatchers();
+		
+	}
+
+	async activateView() {
+		const { workspace } = this.app;
+
+		let leaf = workspace.getLeavesOfType(VIEW_TYPE_FAMILY_TREE)[0];
+
+		if (!leaf) {
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				await rightLeaf.setViewState({
+					type: VIEW_TYPE_FAMILY_TREE,
+					active: true
+				});
+				leaf = rightLeaf;
+			}
+		}
+
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
 	}
 }

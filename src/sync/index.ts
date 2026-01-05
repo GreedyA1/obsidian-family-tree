@@ -1,0 +1,1 @@
+export { VaultScanner } from './VaultScanner';

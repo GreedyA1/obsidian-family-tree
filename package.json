@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-family-tree",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Family Tree plugin for Obsidian - visualize and manage family relationships",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
@@ -10,10 +10,11 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint ."
 	},
-	"keywords": [],
+	"keywords": ["obsidian", "family-tree", "genealogy", "visualization"],
 	"license": "0-BSD",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/cytoscape": "^3.21.0",
 		"esbuild": "0.25.5",
 		"eslint-plugin-obsidianmd": "0.1.9",
 		"globals": "14.0.0",
@@ -24,6 +25,10 @@
 		"jiti": "2.6.1"
 	},
 	"dependencies": {
-		"obsidian": "latest"
+		"obsidian": "latest",
+		"cytoscape": "^3.28.1",
+		"cytoscape-dagre": "^2.5.0",
+		"cytoscape-fcose": "^2.2.0",
+		"cytoscape-edgehandles": "^4.0.1"
 	}
 }
